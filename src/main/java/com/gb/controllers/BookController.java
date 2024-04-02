@@ -2,59 +2,65 @@ package com.gb.controllers;
 
 import lombok.RequiredArgsConstructor;
 
+import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.gb.model.Book;
 import com.gb.services.BookService;
 import org.springframework.ui.Model;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-
 
 @RestController
-@RequestMapping("ui")
+@RequestMapping("book")
 @RequiredArgsConstructor
 public class BookController {
 
     @Autowired
     private final BookService service;
 
-    @GetMapping("newBook")
-    public void createBook(@RequestParam String name, @RequestParam long date) {
-        service.createBook(name, date);
+    @PostMapping
+    public ResponseEntity<Book> createBook(@RequestParam Book book) {
+        Book createdBook = service.createBook(book);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdBook.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdBook);
     }
     
 
-    @GetMapping("books")
-    public List<Book> getAllBook(Model model){
-        return service.getBooks();
+    @GetMapping()
+    public ResponseEntity<List<Book>> getAllBook(Model model){
+        return ResponseEntity.ok().body(service.getBooks());
     }
 
-    @GetMapping("bookName")
-    public Book getBook(@RequestParam String name) {
-        return service.getByName(name);
+    @GetMapping("{name}")
+    public ResponseEntity<Book> getName(@RequestParam String name) {
+        return ResponseEntity.ok().body(service.getByName(name));
     }
 
-    @GetMapping("bookId")
-    public Book getId(@RequestParam Long id) {
-        return service.getById(id);
+    @GetMapping("{id}")
+    public ResponseEntity<Book> getId(@RequestParam Long id) {
+        return ResponseEntity.ok().body(service.getById(id));
     }
     
 
-    @GetMapping("updateBook")
-    public void getUpdate(@RequestParam long id, @RequestParam String name, @RequestParam int newDate) {
-        service.updateBook(id, name, newDate);
+    @PutMapping()
+    public ResponseEntity<Book> getUpdate(@RequestParam long id, @RequestParam Book book) {
+        return ResponseEntity.ok().body(service.updateBook(id, book));
     }
 
-    @GetMapping("deleteBook")
-    public String deleteBook(@RequestParam long id) {
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteBook(@RequestParam long id) {
         service.deleteBook(id);
-        return "book delete";
+        return ResponseEntity.ok().build();
     }
 }

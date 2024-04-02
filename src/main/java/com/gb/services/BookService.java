@@ -5,7 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.mapping.AccessOptions.SetOptions.Propagation;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gb.model.Book;
 import com.gb.repository.CrudBookRepository;
 import com.gb.repository.JpaBookRepository;
@@ -19,16 +22,10 @@ import java.util.stream.StreamSupport;
 @Service
 public class BookService {
 
+    public static final String NOT_FOUND_MESSAGE = "Не удалось найти книгу с заданным значение = ";
+
     private final JpaBookRepository repository;
 
-    @EventListener(ContextRefreshedEvent.class)
-    public void onCreateDatabase() {
-        repository.save(new Book("Дневник мага", 2015));
-        repository.save(new Book("Алхимик", 2022));
-        repository.save(new Book("Пятая гора", 2018));
-        repository.save(new Book("Мактуб", 2023));
-        repository.save(new Book("Заир", 2019));
-    }
 
     public List<Book> getBooks() {
         Iterable<Book> iterable = repository.findAll();
@@ -36,31 +33,48 @@ public class BookService {
     }
 
     public Book getByName(String name) {
-        return repository.findByName(name);
+        Book book = repository.findByName(name);
+        if (book == null){
+            throwNotFoundExceptionByName(name);
+        }
+        return book;
     }
 
     public Book getById(long id){
-        return repository.findById(id).orElseThrow();
+        Book book = repository.findById(id).orElse(null);
+        if (book == null){
+            throwNotFoundExceptionById(id);
+        }
+        return book;
     }
 
     public void deleteBook(long id){
-        repository.delete(getById(id));
+        checkExistsById(id);
+        repository.deleteById(id);
     }
 
-    @Transactional
-    public void updateBook(long id, String newName, long newReleaseDate) {
-        Book book = repository.findById(id).orElseThrow();
-
-        book.setName(newName);
-        repository.save(book);
-
-        book.setReleaseDate(newReleaseDate);
-        repository.save(book);
+    public Book updateBook(long id, Book book) {
+        checkExistsById(id);
+        book.setId(id);
+        return repository.save(book);
     }
 
-    public void createBook(String name, long date){
-        repository.save(new Book(name, date));
+    public Book createBook(Book book){
+        return repository.save(new Book(book.getName(), book.getReleaseDate()));
     }
 
+    private void checkExistsById(long id){
+        if(!repository.existsById(id)){
+            throwNotFoundExceptionById(id);
+        }
+    }
+
+    private void throwNotFoundExceptionById(long id){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + id);
+    }
+
+    private void throwNotFoundExceptionByName(String name){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + name);
+    }
 
 }

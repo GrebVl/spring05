@@ -4,7 +4,10 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.gb.model.*;
 import com.gb.repository.JpaReaderRepository;
 
@@ -18,15 +21,10 @@ import java.util.stream.StreamSupport;
 @Service
 public class ReaderService {
 
-     private final JpaReaderRepository repository;
+    public static final String NOT_FOUND_MESSAGE = "Не удалось найти читателя с заданным значением = ";
 
-    @EventListener(ContextRefreshedEvent.class)
-    public void onCreateDatabase() {
-        repository.save(new Reader("Константин", 15));
-        repository.save(new Reader("Василий", 18));
-        repository.save(new Reader("Евгуний", 51));
-        repository.save(new Reader("Алексей", 30));
-    }
+
+     private final JpaReaderRepository repository;
 
     public List<Reader> getReaders() {
         Iterable<Reader> iterable = repository.findAll();
@@ -34,30 +32,48 @@ public class ReaderService {
     }
 
     public Reader getByName(String name) {
-        return repository.findByName(name);
+        Reader reader = repository.findByName(name);
+        if (reader == null){
+            throwNotFoundExceptionByName(name);
+        }
+        return reader;
     }
 
     public Reader getById(long id){
-        return repository.findById(id).orElseThrow();
+        Reader reader = repository.findById(id).orElse(null);
+        if (reader == null){
+            throwNotFoundExceptionById(id);
+        }
+        return reader;
     }
 
     public void deleteReader(long id){
+        checkExistsById(id);
         repository.delete(getById(id));
     }
 
-    @Transactional
-    public void updateReader(long id, String newName, int newAge) {
-        Reader reader = repository.findById(id).orElseThrow();
-
-        reader.setName(newName);
-        repository.save(reader);
-
-        reader.setAge(newAge);
-        repository.save(reader);
+    public Reader updateReader(long id, Reader reader) {
+        checkExistsById(id);
+        reader.setId(id);
+        return repository.save(reader);
     }
 
-    public void createReader(String name, int age){
-        repository.save(new Reader(name, age));
+    public Reader createReader(Reader reader){
+        return repository.save(new Reader(reader.getName(), reader.getAge()));
+    }
+
+    private void checkExistsById(long id){
+        if(!repository.existsById(id)){
+            throwNotFoundExceptionById(id);
+        }
+    }
+
+    private void throwNotFoundExceptionById(long id){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + id);
+    }
+
+    private void throwNotFoundExceptionByName(String name){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + name);
     }
    
 }

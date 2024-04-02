@@ -1,61 +1,58 @@
 package com.gb.controllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.gb.model.Issue;
 import com.gb.services.IssueService;
-
-import java.util.List;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+
 
 @Controller
-@RequestMapping("ui")
+@RequestMapping("issue")
 @RequiredArgsConstructor
 public class IssueController {
 
     @Autowired
     private IssueService service;
-
-    @GetMapping("newIssue")
-    public void createIssue(@RequestParam long idBook, @RequestParam long idReader) {
-        service.createIssue(idBook, idReader);
-    }
-    
-
-    @GetMapping("issues")
-    public List<Issue> getAllIssue(Model model){
-        return service.getIssues();
+@GetMapping("{id}")
+    public ResponseEntity<Issue> findById(@PathVariable long id){
+        return ResponseEntity.status(HttpStatus.OK).body(service.findById(id));
     }
 
-    @GetMapping("issueIdBook")
-    public Issue getIssueBook(@RequestParam long idBook) {
-        return service.getByBook(idBook);
+    @GetMapping
+    public ResponseEntity<List<Issue>> findAll(){
+        return ResponseEntity.status(HttpStatus.OK).body(service.findAll());
     }
 
-    @GetMapping("issueIdReader")
-    public Issue getIssueReader(@RequestParam long idReadr) {
-        return service.getByReader(idReadr);
+    @PostMapping
+    public ResponseEntity<Issue> createIssue(@RequestBody Issue issue){
+        Issue createdIssue = service.saveIssue(issue);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdIssue.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdIssue);
     }
 
-
-    @GetMapping("issueId")
-    public Issue getId(@RequestParam Long id) {
-        return service.getById(id);
-    }
-    
-
-    @GetMapping("updateIssue")
-    public void getUpdate(@RequestParam long id, @RequestParam long idBook, @RequestParam long idReader) {
-        service.updateIssue(id, idBook, idReader);
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteIssue(@PathVariable long id){
+        service.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("deleteIssue")
-    public String deleteIssue(@RequestParam long id) {
-        service.deleteIssue(id);
-        return "issue delete";
+    @PutMapping("{id}")
+    public ResponseEntity<Issue> returnBook(@PathVariable long id){
+        return ResponseEntity.ok().body(service.returnBook(id));
     }
 }

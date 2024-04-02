@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -22,19 +24,24 @@ public class Issue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "idReader")
-    private long idReader;
+    @ManyToOne
+    @JoinColumn(name = "idReader")
+    private Reader reader;
 
-    @Column(name = "idBook")
-    private long idBook;
+    @ManyToOne
+    @JoinColumn(name = "idBook")
+    private Book book;
 
-    @Column(name = "date")
-    private LocalDateTime time;
+    @Column(name = "issuedAt")
+    private LocalDateTime issuedAt;
 
-    public Issue(long idReader, long idBook){
-        this.idBook = idBook;
-        this.idReader = idReader;
-        time = LocalDateTime.now();
+    @Column(name = "returnedAt")
+    private LocalDateTime returnedAt;
+
+    public Issue(Book book, Reader reader){
+        this.reader = reader;
+        this.book = book;
+        this.issuedAt = LocalDateTime.now();
     }
 
 }
