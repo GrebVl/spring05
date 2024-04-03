@@ -1,19 +1,13 @@
 package com.gb.services;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.data.mapping.AccessOptions.SetOptions.Propagation;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.gb.model.Book;
-import com.gb.repository.CrudBookRepository;
 import com.gb.repository.JpaBookRepository;
 
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -60,7 +54,7 @@ public class BookService {
     }
 
     public Book createBook(Book book){
-        return repository.save(new Book(book.getName(), book.getReleaseDate()));
+        return repository.save(new Book(book.getName(), book.getDate()));
     }
 
     private void checkExistsById(long id){

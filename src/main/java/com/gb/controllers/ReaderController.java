@@ -13,24 +13,42 @@ import com.gb.services.ReaderService;
 import java.net.URI;
 import java.util.List;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-@Controller
-@RequestMapping("ui")
+
+@RestController
+@RequestMapping("reader")
 @RequiredArgsConstructor
 public class ReaderController {
 
     @Autowired
     private ReaderService service;
 
+    @GetMapping("any")
+    public String any() {
+        return "any";
+    }
+
+    @GetMapping("admin")
+    public String admin() {
+        return "admin";
+    }
+
+    @GetMapping("reader")
+    public String reader() {
+        return "reader";
+    }
+
+    @GetMapping("auth")
+    public String auth() {
+        return "auth";
+    }
+    
+
     @GetMapping("{id}")
     public ResponseEntity<Reader> findById(@PathVariable long id){
         return ResponseEntity.status(HttpStatus.OK).body(service.getById(id));
-    }
-
-    @GetMapping("{name}")
-    public ResponseEntity<Reader> getName(@RequestParam String name) {
-        return ResponseEntity.ok().body(service.getByName(name));
     }
 
     @GetMapping

@@ -16,7 +16,7 @@ import com.gb.services.IssueService;
 import org.springframework.stereotype.Controller;
 
 
-@Controller
+@RestController
 @RequestMapping("issue")
 @RequiredArgsConstructor
 public class IssueController {

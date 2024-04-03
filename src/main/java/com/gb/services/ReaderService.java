@@ -2,6 +2,7 @@ package com.gb.services;
 
 import lombok.RequiredArgsConstructor;
 
+import org.hibernate.event.spi.RefreshEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 import com.gb.model.*;
 import com.gb.repository.JpaReaderRepository;
 
-import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -31,13 +31,6 @@ public class ReaderService {
         return StreamSupport.stream(iterable.spliterator(), false).toList();
     }
 
-    public Reader getByName(String name) {
-        Reader reader = repository.findByName(name);
-        if (reader == null){
-            throwNotFoundExceptionByName(name);
-        }
-        return reader;
-    }
 
     public Reader getById(long id){
         Reader reader = repository.findById(id).orElse(null);
@@ -59,7 +52,7 @@ public class ReaderService {
     }
 
     public Reader createReader(Reader reader){
-        return repository.save(new Reader(reader.getName(), reader.getAge()));
+        return repository.save(reader);
     }
 
     private void checkExistsById(long id){
@@ -74,6 +67,25 @@ public class ReaderService {
 
     private void throwNotFoundExceptionByName(String name){
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE + name);
+    }
+
+    @EventListener(ContextRefreshedEvent.class)
+    private void createdStarterDate(){
+        System.out.println("test");
+
+        Reader reader1 = new Reader("admin", 20);
+        reader1.setLogin("admin");
+        reader1.setPassword("admin");
+        reader1.setRole("admin");
+
+        Reader reader2 = new Reader("user", 20);
+        reader2.setLogin("user");
+        reader2.setPassword("user");
+        reader2.setRole("user");
+
+        createReader(reader1);
+        createReader(reader2);
+
     }
    
 }

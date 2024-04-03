@@ -25,7 +25,8 @@ public class BookController {
     private final BookService service;
 
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestParam Book book) {
+    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+        System.out.println(book.getName() + " " + book.getDate());
         Book createdBook = service.createBook(book);
 
         URI location = ServletUriComponentsBuilder

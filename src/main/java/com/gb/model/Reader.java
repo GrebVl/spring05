@@ -19,11 +19,20 @@ public class Reader {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(name = "login")
+    private String login;
+
+    @Column(name = "password")
+    private String password;
+
     @Column(name = "name")
     private String name;
 
     @Column(name = "age")
     private int age;
+
+    @Column(name = "role")
+    private String role;
 
     public Reader(String name, int age){
         this.name = name;

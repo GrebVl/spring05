@@ -23,11 +23,11 @@ public class Book {
     private String name;
 
     @Column(name = "date")
-    private long releaseDate;
+    private int date;
 
-    public Book(String name, long releaseDate){
+    public Book(String name, int date){
         this.name = name;
-        this.releaseDate = releaseDate;
+        this.date = date;
     }
 
 }
